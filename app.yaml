@@ -1,0 +1,61 @@
+runtime: nodejs20
+entrypoint: node backend/api-server.js  # Đổi thành tên file chính nếu cần
+
+# Sử dụng automatic scaling với instance class F2
+instance_class: F2
+automatic_scaling:
+  min_instances: 1
+  max_instances: 3
+  min_idle_instances: 1
+  target_cpu_utilization: 0.65
+  target_throughput_utilization: 0.65
+  max_concurrent_requests: 10
+
+env_variables:
+  DB_HOST: 34.124.218.251
+  DB_USER: suaxeapp
+  DB_PASSWORD: Vominhquan.14
+  DB_NAME: websuaxe
+  DB_PORT: 3306
+  SESSION_SECRET: suaXe_SessionSecret_G7h8J9k0L1m2N3o4P5q6R7!@#$%^&*()_+
+  JWT_SECRET: sua_xe_secret_key
+  EMAIL_USER: vomquan14@gmail.com
+  EMAIL_PASS: lqbk fxny nwue wqdj
+  AUTH0_DOMAIN: suaxenhanh.us.auth0.com
+  AUTH0_CLIENT_ID: fuxcsqHDZ09CcqXWqPHy2SdLmqb0Qetv
+  AUTH0_CLIENT_SECRET: qnkXXVIe3ceWcU43jrbKNP3ymnEPR_s3IB37Kj-Mzry1fDMx-kGWgxFylRW8GDR7
+  STATIC_URL: "https://storage.googleapis.com/suaxe-api-web"
+  NODE_ENV: production
+
+handlers:
+  # Xử lý hình ảnh từ /tmp (cho production uploads)
+  - url: /avatars/(.*)
+    static_files: /tmp/avatars/\1
+    upload: /tmp/avatars/.*
+    
+  - url: /services/(.*)
+    static_files: /tmp/services/\1
+    upload: /tmp/services/.*
+    
+  - url: /vehicles/(.*)
+    static_files: /tmp/vehicles/\1
+    upload: /tmp/vehicles/.*
+    
+  - url: /temp/(.*)
+    static_files: /tmp/temp/\1
+    upload: /tmp/temp/.*
+
+  # Xử lý tệp tĩnh từ thư mục Web
+  - url: /images/(.*)
+    static_files: Web/images/\1
+    upload: Web/images/.*
+
+  # Xử lý tệp tĩnh khác từ thư mục Web
+  - url: /(.*\.(js|css|png|jpg|jpeg|gif|ico|json|svg|html))$
+    static_files: Web/\1
+    upload: Web/.*\.(js|css|png|jpg|jpeg|gif|ico|json|svg|html)$
+    
+  # Tất cả các request khác đến app
+  - url: /.*
+    script: auto
+service: default
