@@ -18,7 +18,7 @@ const multer = require('multer');
 const app = express();
 
 // --- Config GCS ---
-const GCS_BUCKET = process.env.GCS_BUCKET || 'suaxe-api-web';
+const GCS_BUCKET = process.env.GCS_BUCKET || 'suaxe-api-2-web';
 const storage = new Storage(); // App Engine / Cloud Run sẽ dùng default credentials
 const bucket = storage.bucket(GCS_BUCKET);
 

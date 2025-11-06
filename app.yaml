@@ -12,7 +12,8 @@ automatic_scaling:
   max_concurrent_requests: 10
 
 env_variables:
-  DB_HOST: 34.124.218.251
+  # ✅ Dùng Cloud SQL socket path thay vì IP để App Engine kết nối trực tiếp
+  DB_HOST: /cloudsql/suaxe-api:asia-southeast1:suaxe-api-web
   DB_USER: suaxeapp
   DB_PASSWORD: Vominhquan.14
   DB_NAME: websuaxe
@@ -23,24 +24,28 @@ env_variables:
   EMAIL_PASS: lqbk fxny nwue wqdj
   AUTH0_DOMAIN: suaxenhanh.us.auth0.com
   AUTH0_CLIENT_ID: fuxcsqHDZ09CcqXWqPHy2SdLmqb0Qetv
-  AUTH0_CLIENT_SECRET: qnkXXVIe3ceWcU43jrbKNP3ymnEPR_s3IB37Kj-Mzry1fDMx-kGWgxFylRW8GDR7
-  STATIC_URL: "https://storage.googleapis.com/suaxe-api-web"
+  AUTH0_CLIENT_SECRET: qnkXXVIe3ceWcU43jrbKNP3ymnEPR_s3IB37Kj-Mzry1fDMx-kGW8GDR7
+  STATIC_URL: "https://storage.googleapis.com/suaxe-api-2-web"
   NODE_ENV: production
+
+# ✅ Cho phép App Engine truy cập trực tiếp Cloud SQL
+beta_settings:
+  cloud_sql_instances: suaxe-api:asia-southeast1:suaxe-api-web
 
 handlers:
   # Xử lý hình ảnh từ /tmp (cho production uploads)
   - url: /avatars/(.*)
     static_files: /tmp/avatars/\1
     upload: /tmp/avatars/.*
-    
+
   - url: /services/(.*)
     static_files: /tmp/services/\1
     upload: /tmp/services/.*
-    
+
   - url: /vehicles/(.*)
     static_files: /tmp/vehicles/\1
     upload: /tmp/vehicles/.*
-    
+
   - url: /temp/(.*)
     static_files: /tmp/temp/\1
     upload: /tmp/temp/.*
@@ -54,8 +59,9 @@ handlers:
   - url: /(.*\.(js|css|png|jpg|jpeg|gif|ico|json|svg|html))$
     static_files: Web/\1
     upload: Web/.*\.(js|css|png|jpg|jpeg|gif|ico|json|svg|html)$
-    
+
   # Tất cả các request khác đến app
   - url: /.*
     script: auto
+
 service: default
