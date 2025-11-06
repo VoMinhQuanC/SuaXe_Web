@@ -14,11 +14,11 @@ const API_BASE_URL = (() => {
     // Nếu đang chạy trên Firebase hosting (production)
     if (location.hostname.includes('firebaseapp.com') || 
         location.hostname.includes('web.app')) {
-        return 'https://suaxe-api.as.r.appspot.com/api'; // URL production
+        return 'https://suaxe-api-2.as.r.appspot.com/api'; // URL production
     }
     
     // Fallback cho các trường hợp khác
-    return 'https://suaxe-api.as.r.appspot.com/api';
+    return 'https://suaxe-api-2.as.r.appspot.com/api';
 })();
 
 // Cấu hình API endpoints

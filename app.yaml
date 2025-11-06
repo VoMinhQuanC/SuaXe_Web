@@ -1,31 +1,47 @@
 runtime: nodejs20
-entrypoint: node backend/api-server.js  # Đổi thành tên file chính nếu cần
+entrypoint: node api-server.js  # ✅ Sửa: Bỏ "backend/" vì file app.yaml đã ở trong thư mục backend
 
 # Sử dụng automatic scaling với instance class F2
 instance_class: F2
 automatic_scaling:
-  min_instances: 1
+  min_instances: 0  # ✅ Sửa: Đổi từ 1 → 0 để tiết kiệm chi phí khi không có traffic
   max_instances: 3
-  min_idle_instances: 1
+  min_idle_instances: 0  # ✅ Sửa: Đổi từ 1 → 0 để tiết kiệm chi phí
   target_cpu_utilization: 0.65
   target_throughput_utilization: 0.65
   max_concurrent_requests: 10
 
 env_variables:
-  # ✅ Dùng Cloud SQL socket path thay vì IP để App Engine kết nối trực tiếp
+  # ✅ Database Connection
+  # Option 1: Dùng Unix Socket (nhanh hơn, khuyến nghị)
   DB_HOST: /cloudsql/suaxe-api:asia-southeast1:suaxe-api-web
+  
+  # Option 2: Nếu không dùng được socket, dùng Public IP
+  # DB_HOST: 34.124.218.251  # Uncomment nếu socket không hoạt động
+  
   DB_USER: suaxeapp
   DB_PASSWORD: Vominhquan.14
   DB_NAME: websuaxe
   DB_PORT: 3306
+  
+  # ✅ Security Secrets
   SESSION_SECRET: suaXe_SessionSecret_G7h8J9k0L1m2N3o4P5q6R7!@#$%^&*()_+
   JWT_SECRET: sua_xe_secret_key
+  
+  # ✅ Email Configuration
   EMAIL_USER: vomquan14@gmail.com
   EMAIL_PASS: lqbk fxny nwue wqdj
+  
+  # ✅ Auth0 Configuration
   AUTH0_DOMAIN: suaxenhanh.us.auth0.com
   AUTH0_CLIENT_ID: fuxcsqHDZ09CcqXWqPHy2SdLmqb0Qetv
-  AUTH0_CLIENT_SECRET: qnkXXVIe3ceWcU43jrbKNP3ymnEPR_s3IB37Kj-Mzry1fDMx-kGW8GDR7
-  STATIC_URL: "https://storage.googleapis.com/suaxe-api-2-web"
+  AUTH0_CLIENT_SECRET: qnkXXVIe3ceWcU43jrbKNP3ymnEPR_s3IB37Kj-Mzry1fDMx-kGWgxFylRW8GDR7
+  
+  # ✅ Google Cloud Storage - SỬA TÊN BUCKET
+  GCS_BUCKET: suaxe-api-1-web  # ✅ THÊM: Tên bucket thực tế
+  STATIC_URL: https://storage.googleapis.com/suaxe-api-1-web  # ✅ SỬA: Đổi suaxe-api-2-web → suaxe-api-1-web
+  
+  # ✅ Environment
   NODE_ENV: production
 
 # ✅ Cho phép App Engine truy cập trực tiếp Cloud SQL
@@ -33,35 +49,32 @@ beta_settings:
   cloud_sql_instances: suaxe-api:asia-southeast1:suaxe-api-web
 
 handlers:
-  # Xử lý hình ảnh từ /tmp (cho production uploads)
-  - url: /avatars/(.*)
-    static_files: /tmp/avatars/\1
-    upload: /tmp/avatars/.*
+  # ⚠️ LƯU Ý: /tmp là ephemeral storage, không nên dùng cho static files
+  # Các handler này có thể bỏ vì ảnh đã lưu trên Cloud Storage
+  
+  # API endpoints - Ưu tiên cao nhất
+  - url: /api/.*
+    script: auto
+    secure: always
 
-  - url: /services/(.*)
-    static_files: /tmp/services/\1
-    upload: /tmp/services/.*
+  # Xử lý hình ảnh từ Cloud Storage (không cần handlers cho /tmp)
+  # Ảnh sẽ được serve từ https://storage.googleapis.com/suaxe-api-1-web/...
 
-  - url: /vehicles/(.*)
-    static_files: /tmp/vehicles/\1
-    upload: /tmp/vehicles/.*
-
-  - url: /temp/(.*)
-    static_files: /tmp/temp/\1
-    upload: /tmp/temp/.*
-
-  # Xử lý tệp tĩnh từ thư mục Web
+  # Xử lý tệp tĩnh từ thư mục Web (nếu cần)
   - url: /images/(.*)
     static_files: Web/images/\1
     upload: Web/images/.*
+    secure: always
 
   # Xử lý tệp tĩnh khác từ thư mục Web
   - url: /(.*\.(js|css|png|jpg|jpeg|gif|ico|json|svg|html))$
     static_files: Web/\1
     upload: Web/.*\.(js|css|png|jpg|jpeg|gif|ico|json|svg|html)$
+    secure: always
 
   # Tất cả các request khác đến app
   - url: /.*
     script: auto
+    secure: always
 
 service: default
