@@ -14,10 +14,10 @@ automatic_scaling:
 env_variables:
   # ✅ Database Connection
   # Option 1: Dùng Unix Socket (nhanh hơn, khuyến nghị)
-  DB_HOST: /cloudsql/suaxe-api:asia-southeast1:suaxe-api-web
+  # DB_HOST: /cloudsql/suaxe-api:asia-southeast1:suaxe-api-web
   
   # Option 2: Nếu không dùng được socket, dùng Public IP
-  # DB_HOST: 34.124.218.251  # Uncomment nếu socket không hoạt động
+  DB_HOST: 34.124.218.251  # Uncomment nếu socket không hoạt động
   
   DB_USER: suaxeapp
   DB_PASSWORD: Vominhquan.14
