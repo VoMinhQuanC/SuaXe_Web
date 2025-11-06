@@ -118,7 +118,9 @@ router.post('/login', async (req, res) => {
         // Tạo phản hồi người dùng cơ bản
         const userResponse = {
             id: user.UserID,
-            fullName: user.FullName,
+            fullName: user.FullName,      // ✅ Thêm fullName (camelCase)
+            name: user.FullName,          // ✅ Thêm name (Flutter tìm field này)
+            FullName: user.FullName,
             email: user.Email,
             phone: user.PhoneNumber,
             role: user.RoleID
