@@ -1,5 +1,5 @@
 runtime: nodejs20
-entrypoint: node api-server.js  # ✅ Sửa: Bỏ "backend/" vì file app.yaml đã ở trong thư mục backend
+entrypoint: node backend/api-server.js 
 
 # Sử dụng automatic scaling với instance class F2
 instance_class: F2
