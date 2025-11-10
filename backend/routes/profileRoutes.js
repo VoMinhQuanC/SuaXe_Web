@@ -239,7 +239,7 @@ router.get('/vehicles/user', authenticateToken, async (req, res) => {
         
         // Lấy danh sách xe từ database
         const [vehicles] = await pool.query(
-            'SELECT * FROM Vehicles WHERE UserID = ? ORDER BY CreatedAt DESC',
+            'SELECT * FROM Vehicles WHERE UserID = ? AND IsDeleted = 0 ORDER BY CreatedAt DESC',
             [userId]
         );
         
@@ -321,8 +321,9 @@ router.post('/vehicles', authenticateToken, async (req, res) => {
         }
         
         // Kiểm tra biển số xe đã tồn tại chưa
+        // ✅ THÊM: AND IsDeleted = 0
         const [existingVehicles] = await pool.query(
-            'SELECT * FROM Vehicles WHERE LicensePlate = ?',
+            'SELECT * FROM Vehicles WHERE LicensePlate = ? AND IsDeleted = 0',
             [licensePlate]
         );
         
@@ -430,7 +431,7 @@ router.put('/vehicles/:id', authenticateToken, async (req, res) => {
 });
 
 /**
- * API: Xóa xe
+ * API: Xóa xe (Soft Delete)
  * Method: DELETE
  * Endpoint: /vehicles/:id
  */
@@ -439,9 +440,11 @@ router.delete('/vehicles/:id', authenticateToken, async (req, res) => {
         const userId = req.user.userId;
         const vehicleId = req.params.id;
         
-        // Kiểm tra xe có tồn tại không và thuộc về người dùng hiện tại
+        console.log(`🗑️ Soft deleting vehicle ${vehicleId} for user ${userId}`);
+        
+        // ✅ THÊM: IsDeleted = 0 để chỉ check xe active
         const [existingVehicles] = await pool.query(
-            'SELECT * FROM Vehicles WHERE VehicleID = ?',
+            'SELECT * FROM Vehicles WHERE VehicleID = ? AND IsDeleted = 0',
             [vehicleId]
         );
         
@@ -462,24 +465,26 @@ router.delete('/vehicles/:id', authenticateToken, async (req, res) => {
             });
         }
         
-        // Kiểm tra xem xe có đang được sử dụng trong lịch hẹn nào không
+        // ✅ SỬA: Status NOT IN để loại cả Completed
         const [appointments] = await pool.query(
-            'SELECT * FROM Appointments WHERE VehicleID = ? AND Status != "Canceled"',
+            'SELECT * FROM Appointments WHERE VehicleID = ? AND Status NOT IN ("Canceled", "Completed")',
             [vehicleId]
         );
         
         if (appointments.length > 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Không thể xóa xe đang được sử dụng trong lịch hẹn'
+                message: 'Không thể xóa xe đang có lịch hẹn chưa hoàn thành'
             });
         }
         
-        // Xóa xe
+        // ✅ ĐỔI: DELETE → UPDATE (SOFT DELETE)
         await pool.query(
-            'DELETE FROM Vehicles WHERE VehicleID = ?',
+            'UPDATE Vehicles SET IsDeleted = 1 WHERE VehicleID = ?',
             [vehicleId]
         );
+        
+        console.log(`✅ Vehicle ${vehicleId} soft deleted successfully`);
         
         res.json({
             success: true,
